@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MarketConfig",
+  "type": "object",
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "lastUpdated": { "type": "string", "format": "date" },
+    "indices": {
+      "type": "object",
+      "patternProperties": {
+        "^(NIFTY|SENSEX|BANKNIFTY|FINNIFTY|MIDCPNIFTY)$": {
+          "type": "object",
+          "properties": {
+            "lotSize": { "type": "integer" },
+            "expiryDay": { "type": "integer", "minimum": 0, "maximum": 6 },
+            "strikeStep": { "type": "integer" },
+            "entryTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
+            "exitTime": { "type": "string", "pattern": "^\\d{2}:\\d{2}$" },
+            "spotToken": { "type": "string" },
+            "exchange": { "type": "string", "enum": ["NSE", "BSE"] },
+            "optionExchange": { "type": "string", "enum": ["NFO", "BFO"] }
+          },
+          "required": ["lotSize", "expiryDay", "strikeStep"]
+        }
+      }
+    },
+    "api": {
+      "type": "object",
+      "properties": {
+        "baseUrl": { "type": "string", "format": "uri" },
+        "timeout": { "type": "integer" },
+        "retries": { "type": "integer" }
+      }
+    },
+    "strategy": {
+      "type": "object",
+      "properties": {
+        "ratioShort": { "type": "integer" },
+        "ratioLong": { "type": "integer" },
+        "stopLossPct": { "type": "number" },
+        "vixRange": {
+          "type": "array",
+          "items": { "type": "number" },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      }
+    }
+  },
+  "required": ["version", "lastUpdated", "indices"]
+}

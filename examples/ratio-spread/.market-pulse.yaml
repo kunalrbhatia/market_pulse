@@ -1,0 +1,11 @@
+version: 1
+indices:
+  - NIFTY
+  - SENSEX
+broker: angel-one
+configPath: config/market-config.json
+verify: pnpm verify
+paperFirst: true
+notify:
+  pr: true
+  issue: true

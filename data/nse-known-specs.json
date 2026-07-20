@@ -1,0 +1,37 @@
+{
+  "NIFTY": {
+    "lotSize": 75,
+    "expiryDay": 4,
+    "strikeStep": 50,
+    "sourceUrl": "https://www.nseindia.com/products/content/derivatives/equities/contract_specs.htm",
+    "verifiedAt": "2026-07-20"
+  },
+  "BANKNIFTY": {
+    "lotSize": 15,
+    "expiryDay": 3,
+    "strikeStep": 100,
+    "sourceUrl": "https://www.nseindia.com/products/content/derivatives/equities/contract_specs.htm",
+    "verifiedAt": "2026-07-20"
+  },
+  "FINNIFTY": {
+    "lotSize": 40,
+    "expiryDay": 2,
+    "strikeStep": 100,
+    "sourceUrl": "https://www.nseindia.com/products/content/derivatives/equities/contract_specs.htm",
+    "verifiedAt": "2026-07-20"
+  },
+  "MIDCPNIFTY": {
+    "lotSize": 75,
+    "expiryDay": 1,
+    "strikeStep": 25,
+    "sourceUrl": "https://www.nseindia.com/products/content/derivatives/equities/contract_specs.htm",
+    "verifiedAt": "2026-07-20"
+  },
+  "SENSEX": {
+    "lotSize": 10,
+    "expiryDay": 5,
+    "strikeStep": 100,
+    "sourceUrl": "https://www.bseindia.com/...",
+    "verifiedAt": "2026-07-20"
+  }
+}

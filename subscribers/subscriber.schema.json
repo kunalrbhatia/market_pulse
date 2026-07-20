@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SubscriberConfig",
+  "type": "object",
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "indices": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["NIFTY", "SENSEX", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY"]
+      }
+    },
+    "broker": { "type": "string" },
+    "configPath": { "type": "string" },
+    "verify": { "type": "string" },
+    "paperFirst": { "type": "boolean", "default": true },
+    "notify": {
+      "type": "object",
+      "properties": {
+        "pr": { "type": "boolean" },
+        "issue": { "type": "boolean" }
+      },
+      "required": ["pr", "issue"]
+    }
+  },
+  "required": ["version", "indices", "broker", "configPath", "verify", "notify"]
+}
