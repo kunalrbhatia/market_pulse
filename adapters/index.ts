@@ -4,9 +4,7 @@ import { NodePnpmAdapter } from "./node-pnpm";
 export * from "./base";
 export * from "./node-pnpm";
 
-const adapters: RepoAdapter[] = [
-  new NodePnpmAdapter()
-];
+const adapters: RepoAdapter[] = [new NodePnpmAdapter()];
 
 export async function detectAdapter(repoDir: string): Promise<RepoAdapter | null> {
   for (const adapter of adapters) {

@@ -25,7 +25,7 @@ export class NodePnpmAdapter extends RepoAdapter {
       // 2. Run verify command
       await execPromise(verifyCommand, { cwd: repoDir });
       return true;
-    } catch (err) {
+    } catch {
       return false;
     }
   }
@@ -36,7 +36,7 @@ export class NodePnpmAdapter extends RepoAdapter {
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
     }
-    
+
     // Write formatted JSON config back to file
     fs.writeFileSync(fullPath, JSON.stringify(updatedConfig, null, 2), "utf-8");
   }

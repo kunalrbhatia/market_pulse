@@ -7,16 +7,12 @@ import { SubscriberRepo } from "../subscribers/registry";
 
 const execPromise = util.promisify(exec);
 
-async function retryWithBackoff<T>(
-  fn: () => Promise<T>,
-  retries = 3,
-  delayMs = 1000
-): Promise<T> {
+async function retryWithBackoff<T>(fn: () => Promise<T>, retries = 3, delayMs = 1000): Promise<T> {
   try {
     return await fn();
   } catch (err) {
     if (retries <= 1) throw err;
-    await new Promise(res => setTimeout(res, delayMs));
+    await new Promise((res) => setTimeout(res, delayMs));
     return retryWithBackoff(fn, retries - 1, delayMs * 2);
   }
 }
@@ -34,7 +30,7 @@ export class GitHubClient {
   async cloneRepo(subscriber: SubscriberRepo): Promise<string> {
     const repoFolder = `${subscriber.owner}_${subscriber.repo}`;
     const targetDir = path.join(this.baseWorkDir, repoFolder);
-    
+
     // Clean directory if exists
     if (fs.existsSync(targetDir)) {
       fs.rmSync(targetDir, { recursive: true, force: true });
@@ -49,9 +45,11 @@ export class GitHubClient {
 
   async hasPaperStagingBranch(workDir: string): Promise<boolean> {
     try {
-      const { stdout } = await execPromise(`git ls-remote --heads origin paper-staging`, { cwd: workDir });
+      const { stdout } = await execPromise(`git ls-remote --heads origin paper-staging`, {
+        cwd: workDir,
+      });
       return stdout.includes("refs/heads/paper-staging");
-    } catch (err) {
+    } catch {
       return false;
     }
   }
@@ -80,7 +78,7 @@ export class GitHubClient {
         cmd += ` --base "${opts.base}"`;
       }
       const { stdout } = await execPromise(cmd, { cwd: workDir });
-      
+
       // If label is specified, add it to the PR
       if (opts.label) {
         try {
@@ -89,7 +87,7 @@ export class GitHubClient {
             const prNum = prNumberMatch[1];
             await execPromise(`gh pr edit ${prNum} --add-label "${opts.label}"`, { cwd: workDir });
           }
-        } catch (labelErr) {
+        } catch {
           // Non-blocking label addition
         }
       }
@@ -97,12 +95,7 @@ export class GitHubClient {
     });
   }
 
-  async createIssue(
-    workDir: string,
-    title: string,
-    body: string,
-    label: string
-  ): Promise<string> {
+  async createIssue(workDir: string, title: string, body: string, label: string): Promise<string> {
     return await retryWithBackoff(async () => {
       const cmd = `gh issue create --title "${title}" --body "${body}" --label "${label}"`;
       const { stdout } = await execPromise(cmd, { cwd: workDir });

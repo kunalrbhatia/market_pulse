@@ -6,9 +6,9 @@ export interface SubscriberConfig {
   version: number;
   indices: string[];
   broker: string;
-  configPath: string;        // e.g. "config/market-config.json"
-  verify: string;            // e.g. "pnpm verify"
-  paperFirst: boolean;       // if true, PRs target a "paper"-labeled branch/env, not live config directly
+  configPath: string; // e.g. "config/market-config.json"
+  verify: string; // e.g. "pnpm verify"
+  paperFirst: boolean; // if true, PRs target a "paper"-labeled branch/env, not live config directly
   notify: {
     pr: boolean;
     issue: boolean;
@@ -36,7 +36,7 @@ export class SubscriberRegistry {
       if (fs.existsSync(this.registryPath)) {
         return JSON.parse(fs.readFileSync(this.registryPath, "utf-8"));
       }
-    } catch (err) {
+    } catch {
       // Return empty if read fails
     }
     return [];
@@ -55,14 +55,14 @@ export class SubscriberRegistry {
   loadRepoConfig(repoDir: string): SubscriberConfig | null {
     const yamlPath = path.join(repoDir, ".market-pulse.yaml");
     const ymlPath = path.join(repoDir, ".market-pulse.yml");
-    const targetPath = fs.existsSync(yamlPath) ? yamlPath : (fs.existsSync(ymlPath) ? ymlPath : null);
+    const targetPath = fs.existsSync(yamlPath) ? yamlPath : fs.existsSync(ymlPath) ? ymlPath : null;
 
     if (!targetPath) return null;
 
     try {
       const fileContent = fs.readFileSync(targetPath, "utf-8");
       const doc = yaml.load(fileContent) as any;
-      
+
       // Enforce default values
       return {
         version: doc.version || 1,
@@ -73,10 +73,10 @@ export class SubscriberRegistry {
         paperFirst: doc.paperFirst !== undefined ? doc.paperFirst : true,
         notify: {
           pr: doc.notify?.pr !== undefined ? doc.notify.pr : true,
-          issue: doc.notify?.issue !== undefined ? doc.notify.issue : true
-        }
+          issue: doc.notify?.issue !== undefined ? doc.notify.issue : true,
+        },
       };
-    } catch (err) {
+    } catch {
       return null;
     }
   }

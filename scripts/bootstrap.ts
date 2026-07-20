@@ -1,7 +1,5 @@
 import { exec } from "child_process";
 import * as util from "util";
-import * as path from "path";
-import * as fs from "fs";
 import * as yaml from "js-yaml";
 import { SubscriberRegistry, SubscriberRepo } from "../subscribers/registry";
 
@@ -15,7 +13,9 @@ async function bootstrap() {
 
   try {
     // 1. Search GitHub for repos with the topic "market-pulse"
-    const { stdout } = await execPromise(`gh search repos --topic "market-pulse" --json owner,name,url --limit 50`);
+    const { stdout } = await execPromise(
+      `gh search repos --topic "market-pulse" --json owner,name,url --limit 50`
+    );
     const repos = JSON.parse(stdout);
 
     console.log(`Found ${repos.length} repositories matching topic.`);
@@ -23,9 +23,9 @@ async function bootstrap() {
     for (const repo of repos) {
       const owner = repo.owner.login;
       const repoName = repo.name;
-      
+
       // Check if already in registry
-      const exists = currentSubscribers.some(s => s.owner === owner && s.repo === repoName);
+      const exists = currentSubscribers.some((s) => s.owner === owner && s.repo === repoName);
       if (exists) {
         console.log(`- ${owner}/${repoName} is already registered.`);
         continue;
@@ -57,17 +57,19 @@ async function bootstrap() {
               paperFirst: configDoc.paperFirst !== undefined ? configDoc.paperFirst : true,
               notify: {
                 pr: configDoc.notify?.pr !== undefined ? configDoc.notify.pr : true,
-                issue: configDoc.notify?.issue !== undefined ? configDoc.notify.issue : true
-              }
+                issue: configDoc.notify?.issue !== undefined ? configDoc.notify.issue : true,
+              },
             },
-            lastChecked: ""
+            lastChecked: "",
           };
 
           discoveredRepos.push(newSubscriber);
           console.log(`  Added ${owner}/${repoName} to registry.`);
         }
-      } catch (apiErr) {
-        console.warn(`  Failed to retrieve .market-pulse.yaml from ${owner}/${repoName}. Skipping.`);
+      } catch {
+        console.warn(
+          `  Failed to retrieve .market-pulse.yaml from ${owner}/${repoName}. Skipping.`
+        );
       }
     }
 

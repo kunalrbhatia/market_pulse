@@ -8,7 +8,7 @@ jest.mock("fs", () => {
   return {
     ...original,
     existsSync: jest.fn(),
-    readFileSync: jest.fn()
+    readFileSync: jest.fn(),
   };
 });
 
@@ -19,9 +19,11 @@ describe("monitors/nse-contract-specs", () => {
 
   it("should run with ground truth specs and empty scrape", async () => {
     (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify({
-      NIFTY: { lotSize: 75, expiryDay: 4, strikeStep: 50 }
-    }));
+    (fs.readFileSync as jest.Mock).mockReturnValue(
+      JSON.stringify({
+        NIFTY: { lotSize: 75, expiryDay: 4, strikeStep: 50 },
+      })
+    );
 
     global.fetch = jest.fn().mockImplementation(() => Promise.reject(new Error("Network block")));
 
@@ -34,7 +36,7 @@ describe("monitors/nse-contract-specs", () => {
     expect(res.changes[0]).toEqual({
       path: "indices.NIFTY.lotSize",
       oldValue: 50,
-      newValue: 75
+      newValue: 75,
     });
   });
 });
@@ -42,9 +44,9 @@ describe("monitors/nse-contract-specs", () => {
 describe("monitors/nse-holidays", () => {
   it("should run and return holiday changes if baseline exists and live fetch fails", async () => {
     (fs.existsSync as jest.Mock).mockReturnValue(true);
-    (fs.readFileSync as jest.Mock).mockReturnValue(JSON.stringify([
-      { tradingDate: "26-Jan-2026", description: "Republic Day" }
-    ]));
+    (fs.readFileSync as jest.Mock).mockReturnValue(
+      JSON.stringify([{ tradingDate: "26-Jan-2026", description: "Republic Day" }])
+    );
 
     global.fetch = jest.fn().mockImplementation(() => Promise.reject(new Error("Timeout")));
 

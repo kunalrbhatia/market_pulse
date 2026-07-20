@@ -1,11 +1,11 @@
 import * as fs from "fs";
 import * as path from "path";
 import { acquireLock, releaseLock, getLockPath } from "./lock/lockfile";
-import { SubscriberRegistry, SubscriberRepo } from "./subscribers/registry";
+import { SubscriberRegistry } from "./subscribers/registry";
 import { GitHubClient } from "./github/client";
 import { getMonitorsForConfig } from "./monitors";
-import { diffConfigs, applyDeltas } from "./detectors/diff";
-import { evaluateDelta, GuardrailResult } from "./detectors/guardrails";
+import { applyDeltas } from "./detectors/diff";
+import { evaluateDelta } from "./detectors/guardrails";
 import { incrementConfigVersion } from "./detectors/version";
 import { detectAdapter } from "./adapters";
 import { ConfigDelta } from "./monitors/base";
@@ -29,7 +29,7 @@ async function runEngine() {
     if (fs.existsSync(historyPath)) {
       deltaHistory = JSON.parse(fs.readFileSync(historyPath, "utf-8"));
     }
-  } catch (err) {
+  } catch {
     // Ignore history load errors
   }
 
@@ -52,15 +52,19 @@ async function runEngine() {
         // ii. Read current market-config
         const configFilePath = path.join(repoDir, subscriber.config.configPath);
         if (!fs.existsSync(configFilePath)) {
-          console.warn(`Config file not found in repo at ${subscriber.config.configPath}, skipping.`);
+          console.warn(
+            `Config file not found in repo at ${subscriber.config.configPath}, skipping.`
+          );
           continue;
         }
 
         let currentConfig: any;
         try {
           currentConfig = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
-        } catch (err) {
-          console.error(`Failed to parse current config in repo ${subscriber.owner}/${subscriber.repo}, skipping.`);
+        } catch {
+          console.error(
+            `Failed to parse current config in repo ${subscriber.owner}/${subscriber.repo}, skipping.`
+          );
           continue;
         }
 
@@ -79,7 +83,10 @@ async function runEngine() {
               }
             }
           } catch (err) {
-            console.error(`Monitor ${monitor.name} failed for ${subscriber.owner}/${subscriber.repo}:`, err);
+            console.error(
+              `Monitor ${monitor.name} failed for ${subscriber.owner}/${subscriber.repo}:`,
+              err
+            );
           }
         }
 
@@ -96,7 +103,7 @@ async function runEngine() {
         for (const delta of allDeltas) {
           const confidence = deltaToConfidence.get(delta) || "high";
           const pathHistory = deltaHistory[delta.path] || [];
-          
+
           const check = evaluateDelta(delta, confidence, pathHistory, allDeltas);
           if (check.allowed === "pr") {
             prDeltas.push(delta);
@@ -109,7 +116,9 @@ async function runEngine() {
         // Detect appropriate repo adapter
         const adapter = await detectAdapter(repoDir);
         if (!adapter) {
-          console.error(`No suitable adapter detected for repo ${subscriber.owner}/${subscriber.repo}, skipping.`);
+          console.error(
+            `No suitable adapter detected for repo ${subscriber.owner}/${subscriber.repo}, skipping.`
+          );
           continue;
         }
 
@@ -123,16 +132,19 @@ async function runEngine() {
           if (verifyPassed) {
             const hasStaging = await github.hasPaperStagingBranch(repoDir);
             const branchName = `fix/update-market-config-${Date.now()}`;
-            
+
             await github.createBranch(repoDir, branchName);
-            await github.commitAndPush(repoDir, `fix: update market configuration parameters\n\nAutomated updates to indices/api specifications.`);
+            await github.commitAndPush(
+              repoDir,
+              `fix: update market configuration parameters\n\nAutomated updates to indices/api specifications.`
+            );
 
             if (subscriber.config.paperFirst) {
               if (hasStaging) {
                 const prUrl = await github.createPR(
                   repoDir,
                   "fix: update market config (paper-staging)",
-                  `Automated market specification changes applied:\n\n${prDeltas.map(d => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
+                  `Automated market specification changes applied:\n\n${prDeltas.map((d) => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
                   { base: "paper-staging" }
                 );
                 console.log(`Opened PR targeting paper-staging: ${prUrl}`);
@@ -141,7 +153,7 @@ async function runEngine() {
                 const issueUrl = await github.createIssue(
                   repoDir,
                   "Alert: market-pulse paperFirst is set but paper-staging branch is missing",
-                  `The engine detected configuration updates but could not open a PR because the target \`paper-staging\` branch is missing. Please create it or set \`paperFirst: false\`.\n\n### Intended changes:\n${prDeltas.map(d => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
+                  `The engine detected configuration updates but could not open a PR because the target \`paper-staging\` branch is missing. Please create it or set \`paperFirst: false\`.\n\n### Intended changes:\n${prDeltas.map((d) => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
                   "needs-human-review"
                 );
                 console.log(`Opened issue for missing staging branch: ${issueUrl}`);
@@ -150,7 +162,7 @@ async function runEngine() {
               const prUrl = await github.createPR(
                 repoDir,
                 "fix: update market config (live)",
-                `Automated market specification changes applied to live config:\n\n${prDeltas.map(d => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
+                `Automated market specification changes applied to live config:\n\n${prDeltas.map((d) => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
                 { label: "⚠️ live-config" }
               );
               console.log(`Opened PR targeting main/live: ${prUrl}`);
@@ -168,7 +180,7 @@ async function runEngine() {
             const issueUrl = await github.createIssue(
               repoDir,
               "Alert: Configuration update failed verification tests",
-              `The engine attempted to apply config changes but local verification tests (\`${subscriber.config.verify}\`) failed.\n\n### Intended changes:\n${prDeltas.map(d => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
+              `The engine attempted to apply config changes but local verification tests (\`${subscriber.config.verify}\`) failed.\n\n### Intended changes:\n${prDeltas.map((d) => `- \`${d.path}\`: ${d.oldValue} -> ${d.newValue}`).join("\n")}`,
               "verify-failed"
             );
             console.log(`Verification failed. Opened issue: ${issueUrl}`);
@@ -180,7 +192,7 @@ async function runEngine() {
           const issueUrl = await github.createIssue(
             repoDir,
             "Alert: Market condition changes detected (Manual Review Required)",
-            `The engine detected market condition updates that did not clear automated PR safety rules.\n\n### Detected changes:\n${issueDeltas.map(id => `- \`${id.delta.path}\`: ${id.delta.oldValue} -> ${id.delta.newValue} (Reason: *${id.reason}*)`).join("\n")}`,
+            `The engine detected market condition updates that did not clear automated PR safety rules.\n\n### Detected changes:\n${issueDeltas.map((id) => `- \`${id.delta.path}\`: ${id.delta.oldValue} -> ${id.delta.newValue} (Reason: *${id.reason}*)`).join("\n")}`,
             "needs-human-review"
           );
           console.log(`Opened manual review issue: ${issueUrl}`);
@@ -188,7 +200,10 @@ async function runEngine() {
 
         subscriber.lastChecked = new Date().toISOString();
       } catch (repoErr) {
-        console.error(`Error processing repository ${subscriber.owner}/${subscriber.repo}:`, repoErr);
+        console.error(
+          `Error processing repository ${subscriber.owner}/${subscriber.repo}:`,
+          repoErr
+        );
       }
     }
 
@@ -209,7 +224,7 @@ async function runEngine() {
 }
 
 if (require.main === module) {
-  runEngine().catch(err => {
+  runEngine().catch((err) => {
     console.error("Engine crashed:", err);
     process.exit(1);
   });

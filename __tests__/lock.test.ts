@@ -1,6 +1,5 @@
 import { acquireLock, releaseLock, getLockPath } from "../lock/lockfile";
 import * as fs from "fs";
-import * as path from "path";
 
 jest.mock("fs", () => {
   const original = jest.requireActual("fs");
@@ -10,7 +9,7 @@ jest.mock("fs", () => {
     readFileSync: jest.fn(),
     writeFileSync: jest.fn(),
     unlinkSync: jest.fn(),
-    mkdirSync: jest.fn()
+    mkdirSync: jest.fn(),
   };
 });
 

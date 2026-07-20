@@ -6,27 +6,21 @@ describe("detectors/diff", () => {
     const oldConfig = { a: 1, b: 2 };
     const newConfig = { a: 1, b: 3 };
     const deltas = diffConfigs(oldConfig, newConfig);
-    expect(deltas).toEqual([
-      { path: "b", oldValue: 2, newValue: 3 }
-    ]);
+    expect(deltas).toEqual([{ path: "b", oldValue: 2, newValue: 3 }]);
   });
 
   it("should diff nested values", () => {
     const oldConfig = { a: { b: 1 } };
     const newConfig = { a: { b: 2 } };
     const deltas = diffConfigs(oldConfig, newConfig);
-    expect(deltas).toEqual([
-      { path: "a.b", oldValue: 1, newValue: 2 }
-    ]);
+    expect(deltas).toEqual([{ path: "a.b", oldValue: 1, newValue: 2 }]);
   });
 
   it("should diff array fields", () => {
     const oldConfig = { arr: [1, 2] };
     const newConfig = { arr: [1, 2, 3] };
     const deltas = diffConfigs(oldConfig, newConfig);
-    expect(deltas).toEqual([
-      { path: "arr", oldValue: [1, 2], newValue: [1, 2, 3] }
-    ]);
+    expect(deltas).toEqual([{ path: "arr", oldValue: [1, 2], newValue: [1, 2, 3] }]);
   });
 
   it("should detect key additions and removals", () => {
@@ -35,7 +29,7 @@ describe("detectors/diff", () => {
     const deltas = diffConfigs(oldConfig, newConfig);
     expect(deltas).toEqual([
       { path: "a", oldValue: 1, newValue: undefined },
-      { path: "b", oldValue: undefined, newValue: 2 }
+      { path: "b", oldValue: undefined, newValue: 2 },
     ]);
   });
 
@@ -48,23 +42,23 @@ describe("detectors/diff", () => {
   it("should generate a patch object from deltas", () => {
     const deltas = [
       { path: "indices.NIFTY.lotSize", oldValue: 50, newValue: 75 },
-      { path: "strategy.stopLossPct", oldValue: 1.0, newValue: 1.5 }
+      { path: "strategy.stopLossPct", oldValue: 1.0, newValue: 1.5 },
     ];
     const patch = generatePatch(deltas);
     expect(patch).toEqual({
       indices: { NIFTY: { lotSize: 75 } },
-      strategy: { stopLossPct: 1.5 }
+      strategy: { stopLossPct: 1.5 },
     });
   });
 
   it("should apply deltas and return updated config", () => {
     const config = {
       indices: { NIFTY: { lotSize: 50 } },
-      strategy: { stopLossPct: 1.0 }
+      strategy: { stopLossPct: 1.0 },
     };
     const deltas = [
       { path: "indices.NIFTY.lotSize", oldValue: 50, newValue: 75 },
-      { path: "strategy.newField", oldValue: undefined, newValue: "yes" }
+      { path: "strategy.newField", oldValue: undefined, newValue: "yes" },
     ];
     const updated = applyDeltas(config, deltas);
     expect(updated.indices.NIFTY.lotSize).toBe(75);
@@ -75,7 +69,7 @@ describe("detectors/diff", () => {
     const config = { a: 1, b: { c: 2 } };
     const deltas = [
       { path: "a", oldValue: 1, newValue: undefined },
-      { path: "b.c", oldValue: 2, newValue: undefined }
+      { path: "b.c", oldValue: 2, newValue: undefined },
     ];
     const updated = applyDeltas(config, deltas);
     expect(updated.a).toBeUndefined();
@@ -83,42 +77,33 @@ describe("detectors/diff", () => {
   });
 
   it("should handle null and primitives in diffConfigs", () => {
-    expect(diffConfigs(null, { a: 1 })).toEqual([
-      { path: "", oldValue: null, newValue: { a: 1 } }
-    ]);
-    expect(diffConfigs({ a: 1 }, null)).toEqual([
-      { path: "", oldValue: { a: 1 }, newValue: null }
-    ]);
+    expect(diffConfigs(null, { a: 1 })).toEqual([{ path: "", oldValue: null, newValue: { a: 1 } }]);
+    expect(diffConfigs({ a: 1 }, null)).toEqual([{ path: "", oldValue: { a: 1 }, newValue: null }]);
     expect(diffConfigs("string", { a: 1 })).toEqual([
-      { path: "", oldValue: "string", newValue: { a: 1 } }
+      { path: "", oldValue: "string", newValue: { a: 1 } },
     ]);
   });
 
   it("should handle array mismatches and match cases", () => {
     // Array to object
-    expect(diffConfigs([1], { a: 1 })).toEqual([
-      { path: "", oldValue: [1], newValue: { a: 1 } }
-    ]);
+    expect(diffConfigs([1], { a: 1 })).toEqual([{ path: "", oldValue: [1], newValue: { a: 1 } }]);
     // Array exact match
     expect(diffConfigs([1, 2], [1, 2])).toEqual([]);
   });
 
   it("should create nested objects if path doesn't exist in applyDeltas", () => {
     const config = {};
-    const deltas = [
-      { path: "strategy.nested.param", oldValue: undefined, newValue: 42 }
-    ];
+    const deltas = [{ path: "strategy.nested.param", oldValue: undefined, newValue: 42 }];
     const updated = applyDeltas(config, deltas);
     expect(updated).toEqual({
       strategy: {
         nested: {
-          param: 42
-        }
-      }
+          param: 42,
+        },
+      },
     });
   });
 });
-
 
 describe("detectors/version", () => {
   it("should increment config version and update lastUpdated date", () => {
@@ -134,4 +119,3 @@ describe("detectors/version", () => {
     expect(updated.version).toBe(1);
   });
 });
-

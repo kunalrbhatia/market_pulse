@@ -4,11 +4,16 @@ export function diffConfigs(oldConfig: any, newConfig: any, pathPrefix = ""): Co
   const deltas: ConfigDelta[] = [];
   if (oldConfig === newConfig) return deltas;
 
-  if (typeof oldConfig !== "object" || oldConfig === null || typeof newConfig !== "object" || newConfig === null) {
+  if (
+    typeof oldConfig !== "object" ||
+    oldConfig === null ||
+    typeof newConfig !== "object" ||
+    newConfig === null
+  ) {
     deltas.push({
       path: pathPrefix,
       oldValue: oldConfig,
-      newValue: newConfig
+      newValue: newConfig,
     });
     return deltas;
   }
@@ -19,7 +24,7 @@ export function diffConfigs(oldConfig: any, newConfig: any, pathPrefix = ""): Co
       deltas.push({
         path: pathPrefix,
         oldValue: oldConfig,
-        newValue: newConfig
+        newValue: newConfig,
       });
     }
     return deltas;
@@ -32,13 +37,13 @@ export function diffConfigs(oldConfig: any, newConfig: any, pathPrefix = ""): Co
       deltas.push({
         path: nextPath,
         oldValue: undefined,
-        newValue: newConfig[key]
+        newValue: newConfig[key],
       });
     } else if (!(key in newConfig)) {
       deltas.push({
         path: nextPath,
         oldValue: oldConfig[key],
-        newValue: undefined
+        newValue: undefined,
       });
     } else {
       deltas.push(...diffConfigs(oldConfig[key], newConfig[key], nextPath));

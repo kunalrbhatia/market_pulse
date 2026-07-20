@@ -1,13 +1,12 @@
 import { evaluateDelta, logRejection } from "../detectors/guardrails";
 import * as fs from "fs";
-import * as path from "path";
 
 jest.mock("fs", () => {
   const original = jest.requireActual("fs");
   return {
     ...original,
     appendFileSync: jest.fn(),
-    mkdirSync: jest.fn()
+    mkdirSync: jest.fn(),
   };
 });
 
@@ -43,7 +42,6 @@ describe("detectors/guardrails", () => {
     expect(res.allowed).toBe("pr");
   });
 
-
   it("should reject implausible expiryDay values", () => {
     const delta = { path: "indices.NIFTY.expiryDay", oldValue: 3, newValue: 7 }; // Sunday
     const res = evaluateDelta(delta, "high", []);
@@ -63,7 +61,7 @@ describe("detectors/guardrails", () => {
       { path: "indices.NIFTY.lotSize", oldValue: 50, newValue: 75 },
       { path: "indices.NIFTY.expiryDay", oldValue: 3, newValue: 4 },
       { path: "indices.NIFTY.strikeStep", oldValue: 100, newValue: 50 },
-      { path: "indices.NIFTY.entryTime", oldValue: "09:20", newValue: "09:15" }
+      { path: "indices.NIFTY.entryTime", oldValue: "09:20", newValue: "09:15" },
     ];
     const res = evaluateDelta(delta, "high", [], allDeltas);
     expect(res.allowed).toBe("issue-only");

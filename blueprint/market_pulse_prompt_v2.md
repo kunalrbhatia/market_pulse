@@ -149,15 +149,15 @@ JSON Schema defining the universal config shape that all subscribed repos should
 
 ```typescript
 export interface MonitorResult {
-  source: string;          // e.g. "nse-contract-specs", "broker-angel-one"
-  detectedAt: string;      // ISO date
-  changes: ConfigDelta[];  // What changed
+  source: string; // e.g. "nse-contract-specs", "broker-angel-one"
+  detectedAt: string; // ISO date
+  changes: ConfigDelta[]; // What changed
   confidence: "high" | "low"; // "low" if scraped data required fallback parsing or partial match
-  rawData?: unknown;       // The raw fetched data for debugging
+  rawData?: unknown; // The raw fetched data for debugging
 }
 
 export interface ConfigDelta {
-  path: string;            // JSON path, e.g. "indices.NIFTY.lotSize"
+  path: string; // JSON path, e.g. "indices.NIFTY.lotSize"
   oldValue: unknown;
   newValue: unknown;
 }
@@ -175,16 +175,19 @@ The `confidence` field is new in v2 and is required — see `detectors/guardrail
 NSE does not offer a stable public API and blocks naive `fetch()` calls (no session, no browser-like headers → 403 or hang). **Reverse this priority from v1: manual/community data is primary, live scraping is a secondary confirmation signal, not a source of truth on its own.**
 
 **Primary — Option A: maintained specs file**
+
 - Maintain `data/nse-known-specs.json` with current known values (lot sizes, expiry days, strike steps), each entry carrying a `sourceUrl` and `verifiedAt` date.
 - This file is updated by a human (or a separate low-stakes PR) when NSE publishes a circular changing contract specs. Treat it as ground truth.
 
 **Secondary — Option B: best-effort scrape, confirmation only**
+
 - Before calling the API, first `GET https://www.nseindia.com/` to obtain session cookies, then reuse those cookies (and a realistic `User-Agent`/`Referer` header) on `GET https://www.nseindia.com/api/contract-spec?index=derivatives`.
 - Wrap this in a try/catch with a short timeout (NSE frequently blocks or hangs); on any failure, log and skip — never throw and never block the primary path.
-- If the scrape succeeds and *disagrees* with `data/nse-known-specs.json`, emit the delta with `confidence: "low"` (this becomes an issue, not a PR — see guardrails). If it *agrees*, no delta.
-- If the scrape succeeds and *agrees* with a delta that a human already staged in `nse-known-specs.json` (i.e. the known-specs file was already updated but not yet propagated to subscriber repos), emit the delta with `confidence: "high"`.
+- If the scrape succeeds and _disagrees_ with `data/nse-known-specs.json`, emit the delta with `confidence: "low"` (this becomes an issue, not a PR — see guardrails). If it _agrees_, no delta.
+- If the scrape succeeds and _agrees_ with a delta that a human already staged in `nse-known-specs.json` (i.e. the known-specs file was already updated but not yet propagated to subscriber repos), emit the delta with `confidence: "high"`.
 
 The monitor must:
+
 1. Load `data/nse-known-specs.json` as ground truth
 2. Attempt the live scrape as a confirmation pass (non-blocking on failure)
 3. Compare against each subscriber's current config
@@ -221,9 +224,9 @@ export interface SubscriberConfig {
   version: number;
   indices: string[];
   broker: string;
-  configPath: string;        // e.g. "config/market-config.json"
-  verify: string;            // e.g. "pnpm verify"
-  paperFirst: boolean;       // if true, PRs target a "paper"-labeled branch/env, not live config directly
+  configPath: string; // e.g. "config/market-config.json"
+  verify: string; // e.g. "pnpm verify"
+  paperFirst: boolean; // if true, PRs target a "paper"-labeled branch/env, not live config directly
   notify: {
     pr: boolean;
     issue: boolean;
@@ -234,6 +237,7 @@ export interface SubscriberConfig {
 `paperFirst` is new in v2 and defaults to `true` in the schema — see guardrails below.
 
 **Discovery mechanisms:**
+
 1. **GitHub topic scan** — Search GitHub for repos tagged with `market-pulse`
 2. **Manual registry** — List of known repos in `subscribers.json`
 3. **Auto-register** — When engine runs for a repo, it can register itself
@@ -241,10 +245,7 @@ export interface SubscriberConfig {
 ### 8. `detectors/diff.ts`
 
 ```typescript
-export function diffConfigs(
-  oldConfig: MarketConfig,
-  newConfig: MarketConfig
-): ConfigDelta[] {
+export function diffConfigs(oldConfig: MarketConfig, newConfig: MarketConfig): ConfigDelta[] {
   // Recursive diff, returns array of changes
   // Each change: { path: "indices.NIFTY.lotSize", oldValue: 65, newValue: 50 }
 }
@@ -272,6 +273,7 @@ export function evaluateDelta(
 ```
 
 Rules to implement:
+
 - Any delta with `monitorConfidence === "low"` → `"issue-only"`, never `"pr"`.
 - `lotSize` changes greater than 50% in either direction from the previous value → `"reject"` (almost certainly a bad scrape; log loudly and open an issue tagged `needs-human-review`).
 - `expiryDay` changing to a value that isn't a plausible weekly/monthly expiry day for that index (cross-check against `data/nse-known-specs.json` history) → `"reject"`.
@@ -349,6 +351,7 @@ The engine flow:
 ### 13. `scripts/bootstrap.ts`
 
 One-time setup script:
+
 1. Search GitHub for repos with `market-pulse` topic
 2. For each, check for `.market-pulse.yaml`
 3. Add to `subscribers.json`, defaulting `paperFirst: true` if not specified
@@ -357,6 +360,7 @@ One-time setup script:
 ### 14. Example subscriber config
 
 `examples/ratio-spread/.market-pulse.yaml`:
+
 ```yaml
 version: 1
 indices:
@@ -374,6 +378,7 @@ notify:
 ### 15. `README.md`
 
 Should include:
+
 - What is market-pulse?
 - Architecture diagram (ASCII), including the guardrails/lockfile layer
 - Quick start: `npx market-pulse init` in your algo repo
@@ -404,26 +409,28 @@ Should include:
 
 ## Safety guardrails (summary — see `detectors/guardrails.ts` for full logic)
 
-| Condition | Outcome |
-|---|---|
-| Monitor confidence is `"low"` | Issue only, never PR |
-| `lotSize` change > 50% | Reject, log to audit trail |
-| Implausible `expiryDay` | Reject, log to audit trail |
-| >3 fields changed at once for one index | Issue only (likely a parsing bug) |
-| Verify command fails after patch | Issue only, tagged `verify-failed` |
-| `paperFirst: true` and delta allowed as PR | PR targets `paper-staging` branch |
-| `paperFirst: true` but no `paper-staging` branch exists | Issue only, with explanation |
+| Condition                                               | Outcome                            |
+| ------------------------------------------------------- | ---------------------------------- |
+| Monitor confidence is `"low"`                           | Issue only, never PR               |
+| `lotSize` change > 50%                                  | Reject, log to audit trail         |
+| Implausible `expiryDay`                                 | Reject, log to audit trail         |
+| >3 fields changed at once for one index                 | Issue only (likely a parsing bug)  |
+| Verify command fails after patch                        | Issue only, tagged `verify-failed` |
+| `paperFirst: true` and delta allowed as PR              | PR targets `paper-staging` branch  |
+| `paperFirst: true` but no `paper-staging` branch exists | Issue only, with explanation       |
 
 ---
 
 ## Verification
 
 Before finishing, run:
+
 ```bash
 pnpm verify
 ```
 
 Ensure:
+
 - `tsc --noEmit` passes with 0 errors
 - Tests pass, with 100% coverage on `detectors/`, `guardrails.ts`, and `lock/`
 - Build succeeds

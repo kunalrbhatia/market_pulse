@@ -24,7 +24,7 @@ export class NseHolidaysMonitor extends Monitor {
       if (fs.existsSync(baselinePath)) {
         baselineHolidays = JSON.parse(fs.readFileSync(baselinePath, "utf-8"));
       }
-    } catch (err) {
+    } catch {
       confidence = "low";
     }
 
@@ -33,13 +33,17 @@ export class NseHolidaysMonitor extends Monitor {
     let fetchSucceeded = false;
     try {
       const headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://www.nseindia.com/",
-        "Accept": "*/*"
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Referer: "https://www.nseindia.com/",
+        Accept: "*/*",
       };
 
       // Bootstrap cookie
-      const indexRes = await fetch("https://www.nseindia.com/", { headers, signal: AbortSignal.timeout(5000) });
+      const indexRes = await fetch("https://www.nseindia.com/", {
+        headers,
+        signal: AbortSignal.timeout(5000),
+      });
       const cookies = indexRes.headers.get("set-cookie");
 
       const apiHeaders: any = { ...headers };
@@ -49,7 +53,7 @@ export class NseHolidaysMonitor extends Monitor {
 
       const apiRes = await fetch("https://www.nseindia.com/api/holiday-master?type=trading", {
         headers: apiHeaders,
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5000),
       });
 
       if (apiRes.ok) {
@@ -64,7 +68,7 @@ export class NseHolidaysMonitor extends Monitor {
           fetchSucceeded = true;
         }
       }
-    } catch (err) {
+    } catch {
       // Scrape failed
       fetchSucceeded = false;
       confidence = "low";
@@ -78,10 +82,12 @@ export class NseHolidaysMonitor extends Monitor {
 
     // Map source holidays to an array of dates (e.g. "YYYY-MM-DD" or standard string)
     // Live holidays from NSE typically have format "tradingDate" e.g., "26-Jan-2026"
-    const parsedHolidays = sourceHolidays.map((h: any) => {
-      if (typeof h === "string") return h;
-      return h.tradingDate || h.date;
-    }).filter(Boolean);
+    const parsedHolidays = sourceHolidays
+      .map((h: any) => {
+        if (typeof h === "string") return h;
+        return h.tradingDate || h.date;
+      })
+      .filter(Boolean);
 
     // Let's sort both arrays to do a basic comparison
     const sortedCurrent = [...currentHolidays].sort();
@@ -93,7 +99,7 @@ export class NseHolidaysMonitor extends Monitor {
       changes.push({
         path: "holidays",
         oldValue: currentHolidays,
-        newValue: parsedHolidays
+        newValue: parsedHolidays,
       });
     }
 
@@ -102,7 +108,7 @@ export class NseHolidaysMonitor extends Monitor {
       detectedAt,
       changes,
       confidence,
-      rawData
+      rawData,
     };
   }
 }

@@ -2,7 +2,7 @@ import { GitHubClient } from "../github/client";
 import { exec } from "child_process";
 
 jest.mock("child_process", () => ({
-  exec: jest.fn()
+  exec: jest.fn(),
 }));
 
 describe("github/client", () => {
@@ -36,7 +36,6 @@ describe("github/client", () => {
         cb(null, { stdout: "success" });
       }
     });
-
 
     const sub = { owner: "test", repo: "repo", cloneUrl: "", config: {} as any, lastChecked: "" };
     const dir = await client.cloneRepo(sub);

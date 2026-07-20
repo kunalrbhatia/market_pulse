@@ -1,6 +1,6 @@
 # market-pulse
 
-Universal, self-healing engine for algorithmic trading repositories. 
+Universal, self-healing engine for algorithmic trading repositories.
 
 `market-pulse` continuously monitors market-defining parameters—such as index lot sizes, option expiry schedules, trading holiday calendars, and broker API structures—and automatically heals downstream trading configurations when alterations occur. It automatically clones registered repositories, applies configuration patches, runs validation suites, and stages PRs or opens issues.
 
@@ -99,14 +99,14 @@ notify:
 
 Every detected change is screened before modification. Implausible changes or low-confidence indicators trigger safe fallback actions:
 
-| Condition | Outcome | Description / Threshold |
-|---|---|---|
-| Monitor confidence is `"low"` | **Issue-Only** | Used when scraped data disagrees with verified specifications. |
-| `lotSize` change > 50% | **Reject** | Delta rejected as implausible. Logged to audit trail. |
-| Implausible `expiryDay` | **Reject** | Rejects days outside the typical Monday-to-Friday (1-5) schedule. |
-| >3 fields changed at once | **Issue-Only** | Triggers manual review (assumes parsing script bug). |
-| Verification fails | **Issue-Only** | File an issue tagged `verify-failed` if the patched repo's tests fail. |
-| `paperFirst` Enabled | **PR to Staging** | Targets `paper-staging` branch (falls back to issue if branch does not exist). |
+| Condition                     | Outcome           | Description / Threshold                                                        |
+| ----------------------------- | ----------------- | ------------------------------------------------------------------------------ |
+| Monitor confidence is `"low"` | **Issue-Only**    | Used when scraped data disagrees with verified specifications.                 |
+| `lotSize` change > 50%        | **Reject**        | Delta rejected as implausible. Logged to audit trail.                          |
+| Implausible `expiryDay`       | **Reject**        | Rejects days outside the typical Monday-to-Friday (1-5) schedule.              |
+| >3 fields changed at once     | **Issue-Only**    | Triggers manual review (assumes parsing script bug).                           |
+| Verification fails            | **Issue-Only**    | File an issue tagged `verify-failed` if the patched repo's tests fail.         |
+| `paperFirst` Enabled          | **PR to Staging** | Targets `paper-staging` branch (falls back to issue if branch does not exist). |
 
 ---
 

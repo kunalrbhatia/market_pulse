@@ -18,10 +18,10 @@ export function logRejection(delta: ConfigDelta, reason: string, outcome: string
       timestamp: new Date().toISOString(),
       delta,
       reason,
-      outcome
+      outcome,
     });
     fs.appendFileSync(logPath, entry + "\n", "utf-8");
-  } catch (err) {
+  } catch {
     // Ignore logging errors to prevent crash
   }
 }
@@ -36,7 +36,7 @@ export function evaluateDelta(
   if (monitorConfidence === "low") {
     const result: GuardrailResult = {
       allowed: "issue-only",
-      reason: "Monitor confidence is low"
+      reason: "Monitor confidence is low",
     };
     logRejection(delta, result.reason, result.allowed);
     return result;
@@ -58,7 +58,7 @@ export function evaluateDelta(
       if (pctChange > 0.5) {
         const result: GuardrailResult = {
           allowed: "reject",
-          reason: `lotSize change of ${(pctChange * 100).toFixed(1)}% exceeds 50% limit (old: ${oldVal}, new: ${newVal})`
+          reason: `lotSize change of ${(pctChange * 100).toFixed(1)}% exceeds 50% limit (old: ${oldVal}, new: ${newVal})`,
         };
         logRejection(delta, result.reason, result.allowed);
         return result;
@@ -73,7 +73,7 @@ export function evaluateDelta(
     if (isNaN(newVal) || newVal < 1 || newVal > 5 || !Number.isInteger(newVal)) {
       const result: GuardrailResult = {
         allowed: "reject",
-        reason: `Implausible expiryDay: ${delta.newValue} (must be integer between 1 and 5)`
+        reason: `Implausible expiryDay: ${delta.newValue} (must be integer between 1 and 5)`,
       };
       logRejection(delta, result.reason, result.allowed);
       return result;
@@ -82,7 +82,7 @@ export function evaluateDelta(
 
   // 4. More than 3 fields changing across a single monitor run for the same index
   if (indexName && allDeltas.length > 0) {
-    const indexChangesCount = allDeltas.filter(d => {
+    const indexChangesCount = allDeltas.filter((d) => {
       const parts = d.path.split(".");
       return parts[0] === "indices" && parts[1] === indexName;
     }).length;
@@ -90,7 +90,7 @@ export function evaluateDelta(
     if (indexChangesCount > 3) {
       const result: GuardrailResult = {
         allowed: "issue-only",
-        reason: `More than 3 fields changed for index ${indexName} in a single run (count: ${indexChangesCount})`
+        reason: `More than 3 fields changed for index ${indexName} in a single run (count: ${indexChangesCount})`,
       };
       logRejection(delta, result.reason, result.allowed);
       return result;
@@ -100,6 +100,6 @@ export function evaluateDelta(
   // Default allowed as PR
   return {
     allowed: "pr",
-    reason: "Passed all safety guardrails"
+    reason: "Passed all safety guardrails",
   };
 }

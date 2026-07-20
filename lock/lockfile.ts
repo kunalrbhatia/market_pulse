@@ -6,7 +6,10 @@ export function getLockPath(): string {
   return path.join(os.tmpdir(), "market-pulse.lock");
 }
 
-export async function acquireLock(lockPath: string, maxAgeMs: number = 20 * 60 * 1000): Promise<boolean> {
+export async function acquireLock(
+  lockPath: string,
+  maxAgeMs: number = 20 * 60 * 1000
+): Promise<boolean> {
   try {
     const parentDir = path.dirname(lockPath);
     if (!fs.existsSync(parentDir)) {
@@ -23,7 +26,7 @@ export async function acquireLock(lockPath: string, maxAgeMs: number = 20 * 60 *
       try {
         process.kill(pid, 0);
         processExists = true;
-      } catch (e) {
+      } catch {
         processExists = false;
       }
 
@@ -35,11 +38,11 @@ export async function acquireLock(lockPath: string, maxAgeMs: number = 20 * 60 *
     // Write new lock file
     const lockData = {
       pid: process.pid,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     fs.writeFileSync(lockPath, JSON.stringify(lockData), "utf-8");
     return true;
-  } catch (err) {
+  } catch {
     // If lock acquisition fails, assume we cannot lock
     return false;
   }
@@ -54,7 +57,7 @@ export async function releaseLock(lockPath: string): Promise<void> {
         fs.unlinkSync(lockPath);
       }
     }
-  } catch (err) {
+  } catch {
     // Ignore release errors
   }
 }

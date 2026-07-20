@@ -24,7 +24,7 @@ export class NseContractSpecsMonitor extends Monitor {
       if (fs.existsSync(specsPath)) {
         groundTruth = JSON.parse(fs.readFileSync(specsPath, "utf-8"));
       }
-    } catch (err) {
+    } catch {
       // Fallback if read fails
       confidence = "low";
     }
@@ -34,15 +34,19 @@ export class NseContractSpecsMonitor extends Monitor {
     try {
       // Perform best-effort scrape
       const headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Referer": "https://www.nseindia.com/",
-        "Accept": "*/*"
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        Referer: "https://www.nseindia.com/",
+        Accept: "*/*",
       };
 
       // Get cookie session
-      const indexRes = await fetch("https://www.nseindia.com/", { headers, signal: AbortSignal.timeout(5000) });
+      const indexRes = await fetch("https://www.nseindia.com/", {
+        headers,
+        signal: AbortSignal.timeout(5000),
+      });
       const cookies = indexRes.headers.get("set-cookie");
-      
+
       const apiHeaders: any = { ...headers };
       if (cookies) {
         apiHeaders["Cookie"] = cookies.split(";")[0];
@@ -50,14 +54,14 @@ export class NseContractSpecsMonitor extends Monitor {
 
       const apiRes = await fetch("https://www.nseindia.com/api/contract-spec?index=derivatives", {
         headers: apiHeaders,
-        signal: AbortSignal.timeout(5000)
+        signal: AbortSignal.timeout(5000),
       });
 
       if (apiRes.ok) {
         scrapeData = await apiRes.json();
         rawData = scrapeData;
       }
-    } catch (err) {
+    } catch {
       // Scrape failed - non-blocking
       scrapeData = null;
     }
@@ -66,15 +70,15 @@ export class NseContractSpecsMonitor extends Monitor {
     const scrapeSpecs: any = {};
     if (scrapeData && typeof scrapeData === "object") {
       // Suppose the API returns an array or an object
-      const dataArr = Array.isArray(scrapeData) ? scrapeData : (scrapeData.data || []);
+      const dataArr = Array.isArray(scrapeData) ? scrapeData : scrapeData.data || [];
       for (const item of dataArr) {
         if (item && item.symbol) {
           const sym = item.symbol.toUpperCase();
           if (["NIFTY", "BANKNIFTY", "FINNIFTY", "MIDCPNIFTY", "SENSEX"].includes(sym)) {
             scrapeSpecs[sym] = {
               lotSize: Number(item.lotSize) || undefined,
-              expiryDay: Number(item.expiryDay) !== undefined ? Number(item.expiryDay) : undefined,
-              strikeStep: Number(item.strikeStep) || undefined
+              expiryDay: !isNaN(Number(item.expiryDay)) ? Number(item.expiryDay) : undefined,
+              strikeStep: Number(item.strikeStep) || undefined,
             };
           }
         }
@@ -90,12 +94,20 @@ export class NseContractSpecsMonitor extends Monitor {
 
       if (!gtVal) continue; // skip if no ground truth configured for this index
 
-      const targetFields: ("lotSize" | "expiryDay" | "strikeStep")[] = ["lotSize", "expiryDay", "strikeStep"];
+      const targetFields: ("lotSize" | "expiryDay" | "strikeStep")[] = [
+        "lotSize",
+        "expiryDay",
+        "strikeStep",
+      ];
       for (const field of targetFields) {
         const currentFieldVal = currentVal[field];
         const gtFieldVal = gtVal[field];
 
-        if (currentFieldVal !== undefined && gtFieldVal !== undefined && currentFieldVal !== gtFieldVal) {
+        if (
+          currentFieldVal !== undefined &&
+          gtFieldVal !== undefined &&
+          currentFieldVal !== gtFieldVal
+        ) {
           // Check scrape confirmation
           const scrapeVal = scrapeSpecs[key]?.[field];
           let fieldConfidence: "high" | "low" = "high";
@@ -118,7 +130,7 @@ export class NseContractSpecsMonitor extends Monitor {
           changes.push({
             path: `indices.${key}.${field}`,
             oldValue: currentFieldVal,
-            newValue: gtFieldVal
+            newValue: gtFieldVal,
           });
         }
       }
@@ -129,7 +141,7 @@ export class NseContractSpecsMonitor extends Monitor {
       detectedAt,
       changes,
       confidence,
-      rawData
+      rawData,
     };
   }
 }

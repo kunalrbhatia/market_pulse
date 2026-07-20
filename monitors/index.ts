@@ -12,6 +12,6 @@ export function getMonitorsForConfig(config: any): Monitor[] {
   return [
     new NseContractSpecsMonitor(config),
     new NseHolidaysMonitor(config),
-    new BrokerAngelOneMonitor(config)
+    new BrokerAngelOneMonitor(config),
   ];
 }

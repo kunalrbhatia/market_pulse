@@ -27,7 +27,7 @@ export class BrokerAngelOneMonitor extends Monitor {
         const fileContent = JSON.parse(fs.readFileSync(sessionFilePath, "utf-8"));
         sessionToken = fileContent.sessionToken || fileContent.token;
         apiKey = apiKey || fileContent.apiKey;
-      } catch (err) {
+      } catch {
         // Skip session reading if corrupted
       }
     }
@@ -38,7 +38,7 @@ export class BrokerAngelOneMonitor extends Monitor {
         source: this.name,
         detectedAt,
         changes: [],
-        confidence: "high"
+        confidence: "high",
       };
     }
 
@@ -49,28 +49,31 @@ export class BrokerAngelOneMonitor extends Monitor {
       if (fs.existsSync(baselinePath)) {
         baseline = JSON.parse(fs.readFileSync(baselinePath, "utf-8"));
       }
-    } catch (err) {
+    } catch {
       confidence = "low";
     }
 
     // 4. Hit profile endpoint to check schema changes and connectivity
     try {
       const headers: Record<string, string> = {
-        "Authorization": `Bearer ${sessionToken}`,
+        Authorization: `Bearer ${sessionToken}`,
         "X-PrivateKey": apiKey || "mock-api-key",
         "X-UserType": "USER",
         "X-SourceID": "WEB",
         "X-ClientLocalIP": "127.0.0.1",
         "X-ClientPublicIP": "1.1.1.1",
         "X-MACAddress": "00-00-00-00-00-00",
-        "Accept": "application/json",
-        "Content-Type": "application/json"
+        Accept: "application/json",
+        "Content-Type": "application/json",
       };
 
-      const res = await fetch("https://apiconnect.angelone.in/rest/secure/angelbroking/user/v1/profile", {
-        headers,
-        signal: AbortSignal.timeout(5000)
-      });
+      const res = await fetch(
+        "https://apiconnect.angelone.in/rest/secure/angelbroking/user/v1/profile",
+        {
+          headers,
+          signal: AbortSignal.timeout(5000),
+        }
+      );
 
       if (res.ok) {
         const responseData: any = await res.json();
@@ -86,7 +89,7 @@ export class BrokerAngelOneMonitor extends Monitor {
             changes.push({
               path: "broker.angel-one.profileSchema",
               oldValue: expectedKeys,
-              newValue: profileKeys
+              newValue: profileKeys,
             });
             confidence = "low"; // structural changes require low confidence flags
           }
@@ -95,7 +98,7 @@ export class BrokerAngelOneMonitor extends Monitor {
           changes.push({
             path: "broker.angel-one.apiHealth",
             oldValue: "healthy",
-            newValue: "unhealthy_response_format"
+            newValue: "unhealthy_response_format",
           });
           confidence = "low";
         }
@@ -104,7 +107,7 @@ export class BrokerAngelOneMonitor extends Monitor {
         changes.push({
           path: "broker.angel-one.apiHealth",
           oldValue: "healthy",
-          newValue: `unhealthy_http_${res.status}`
+          newValue: `unhealthy_http_${res.status}`,
         });
         confidence = "low";
       }
@@ -113,7 +116,7 @@ export class BrokerAngelOneMonitor extends Monitor {
       changes.push({
         path: "broker.angel-one.apiHealth",
         oldValue: "healthy",
-        newValue: `error_${err?.message || "unknown"}`
+        newValue: `error_${err?.message || "unknown"}`,
       });
       confidence = "low";
     }
@@ -123,7 +126,7 @@ export class BrokerAngelOneMonitor extends Monitor {
       detectedAt,
       changes,
       confidence,
-      rawData
+      rawData,
     };
   }
 }
