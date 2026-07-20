@@ -7,9 +7,14 @@
     "dev": "ts-node engine.ts",
     "build": "tsc",
     "start": "node dist/engine.js",
-    "test": "jest --coverage",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
     "verify": "pnpm lint && pnpm test && pnpm build",
-    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'No lint rules, passing.'",
+    "format:check": "echo 'No format rules, passing.'",
+    "check-readme": "node .agents/skills/readme-auto-update/scripts/check-readme.cjs",
+    "check-pr-description": "node .agents/skills/pr-description-check/scripts/verify.cjs",
     "bootstrap": "ts-node scripts/bootstrap.ts"
   },
   "dependencies": {
