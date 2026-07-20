@@ -1,0 +1,4 @@
+{
+  "profileKeys": ["clientcode", "name", "email", "mobileno", "exchanges"],
+  "marginKeys": ["totalbalance", "utilised", "freebalance"]
+}

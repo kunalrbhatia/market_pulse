@@ -1,0 +1,27 @@
+[
+  {
+    "tradingDate": "26-Jan-2026",
+    "weekDay": "Monday",
+    "description": "Republic Day"
+  },
+  {
+    "tradingDate": "06-Mar-2026",
+    "weekDay": "Friday",
+    "description": "Holi"
+  },
+  {
+    "tradingDate": "02-Apr-2026",
+    "weekDay": "Thursday",
+    "description": "Mahavir Jayanti"
+  },
+  {
+    "tradingDate": "03-Apr-2026",
+    "weekDay": "Friday",
+    "description": "Good Friday"
+  },
+  {
+    "tradingDate": "01-May-2026",
+    "weekDay": "Friday",
+    "description": "Maharashtra Day"
+  }
+]

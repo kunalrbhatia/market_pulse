@@ -1,0 +1,29 @@
+{
+  "name": "market-pulse",
+  "version": "1.0.0",
+  "description": "Universal self-healing engine for algorithmic trading repos",
+  "main": "dist/engine.js",
+  "scripts": {
+    "dev": "ts-node engine.ts",
+    "build": "tsc",
+    "start": "node dist/engine.js",
+    "test": "jest --coverage",
+    "verify": "pnpm lint && pnpm test && pnpm build",
+    "lint": "tsc --noEmit",
+    "bootstrap": "ts-node scripts/bootstrap.ts"
+  },
+  "dependencies": {
+    "dayjs": "^1.11.10",
+    "js-yaml": "^4.1.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^20.11.24",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
