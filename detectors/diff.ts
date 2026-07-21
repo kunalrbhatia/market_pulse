@@ -75,13 +75,26 @@ export function applyDeltas(config: any, deltas: ConfigDelta[]): any {
   for (const delta of deltas) {
     const parts = delta.path.split(".");
     let current = cloned;
+    let pathCorrupted = false;
+
     for (let i = 0; i < parts.length - 1; i++) {
       const part = parts[i];
-      if (!(part in current) || typeof current[part] !== "object" || current[part] === null) {
+      if (!(part in current)) {
+        // Key doesn't exist yet — safe to create
         current[part] = {};
+      } else if (typeof current[part] !== "object" || current[part] === null) {
+        // Intermediate path points at a scalar — skip to avoid corrupting the config
+        console.warn(
+          `[applyDeltas] Skipping delta "${delta.path}": intermediate key "${part}" is not an object (found: ${typeof current[part]})`
+        );
+        pathCorrupted = true;
+        break;
       }
       current = current[part];
     }
+
+    if (pathCorrupted) continue;
+
     const finalKey = parts[parts.length - 1];
     if (delta.newValue === undefined) {
       delete current[finalKey];
@@ -91,3 +104,4 @@ export function applyDeltas(config: any, deltas: ConfigDelta[]): any {
   }
   return cloned;
 }
+
