@@ -108,6 +108,7 @@ export class NseHolidaysMonitor extends Monitor {
       detectedAt,
       changes,
       confidence,
+      dataSource: fetchSucceeded ? "live" : "cache",
       rawData,
     };
   }

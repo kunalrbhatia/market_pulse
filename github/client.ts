@@ -37,7 +37,11 @@ export class GitHubClient {
     }
 
     await retryWithBackoff(async () => {
-      await execPromise(`gh repo clone ${subscriber.owner}/${subscriber.repo} "${targetDir}"`);
+      // core.autocrlf=input: check out with committed LF endings, avoiding
+      // CRLF/LF mismatches that cause prettier --check to fail on Windows hosts.
+      await execPromise(
+        `gh repo clone ${subscriber.owner}/${subscriber.repo} "${targetDir}" -- -c core.autocrlf=input`
+      );
     });
 
     return targetDir;

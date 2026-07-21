@@ -39,6 +39,7 @@ export class BrokerAngelOneMonitor extends Monitor {
         detectedAt,
         changes: [],
         confidence: "high",
+        dataSource: "none", // no credentials — skipped live check
       };
     }
 
@@ -126,6 +127,7 @@ export class BrokerAngelOneMonitor extends Monitor {
       detectedAt,
       changes,
       confidence,
+      dataSource: "live",
       rawData,
     };
   }

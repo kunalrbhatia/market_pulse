@@ -1,0 +1,23 @@
+[
+  {
+    "owner": "kunalrbhatia",
+    "repo": "ratio-double-calendar-daemon",
+    "cloneUrl": "https://github.com/kunalrbhatia/ratio-double-calendar-daemon.git",
+    "config": {
+      "version": 1,
+      "indices": [
+        "NIFTY",
+        "SENSEX"
+      ],
+      "broker": "angel-one",
+      "configPath": "config/market-config.json",
+      "verify": "pnpm verify",
+      "paperFirst": true,
+      "notify": {
+        "pr": true,
+        "issue": true
+      }
+    },
+    "lastChecked": "2026-07-21T01:27:13.709Z"
+  }
+]

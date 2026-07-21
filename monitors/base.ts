@@ -9,6 +9,7 @@ export interface MonitorResult {
   detectedAt: string; // ISO date
   changes: ConfigDelta[]; // What changed
   confidence: "high" | "low"; // "low" if scraped data required fallback parsing or partial match
+  dataSource: "live" | "cache" | "none"; // Which data path was used this run
   rawData?: unknown; // The raw fetched data for debugging
 }
 
